@@ -31,24 +31,42 @@ class ListMealEntries extends ListRecords
                     ->id('meal-entry-scan-inline')
                     ->extraAttributes([
                         'class' => 'mb-6',
-                        'x-data' => '',
+                        'x-data' => '{}',
                         'x-init' => <<<'JS'
                             $nextTick(() => {
-                                const focusCode = (opts = {}) => {
-                                    const el = $refs.mealEntryScanCodeInput
+                                const focusById = (id) => {
+                                    const el = document.getElementById(id)
                                     if (el && ! el.disabled) {
-                                        el.focus({ preventScroll: true, ...opts })
+                                        el.focus({ preventScroll: true })
                                     }
                                 }
-                                focusCode()
-                                setTimeout(() => focusCode(), 50)
-                                setTimeout(() => focusCode(), 200)
-                                setTimeout(() => focusCode(), 600)
+                                const codeId = 'meal-entry-scan-code-input'
+                                const run = () => focusById(codeId)
+                                run()
+                                ;[50, 200, 600, 1200].forEach((ms) => setTimeout(run, ms))
                             })
                         JS,
-                        'x-on:meal-entry-scan-focus-code.window' => '$nextTick(() => $refs.mealEntryScanCodeInput?.focus({ preventScroll: true }))',
-                        'x-on:meal-entry-scan-focus-price.window' => '$nextTick(() => $refs.mealEntryScanPriceInput?.focus({ preventScroll: true }))',
-                        'x-on:livewire:navigated.window' => '$nextTick(() => { setTimeout(() => $refs.mealEntryScanCodeInput?.focus({ preventScroll: true }), 80) })',
+                        'x-on:meal-entry-scan-focus-code.window' => <<<'JS'
+                            $nextTick(() => {
+                                const run = () => document.getElementById('meal-entry-scan-code-input')?.focus({ preventScroll: true })
+                                run()
+                                ;[0, 50, 150, 400].forEach((ms) => setTimeout(run, ms))
+                            })
+                        JS,
+                        'x-on:meal-entry-scan-focus-price.window' => <<<'JS'
+                            $nextTick(() => {
+                                const run = () => document.getElementById('meal-entry-scan-price-input')?.focus({ preventScroll: true })
+                                run()
+                                ;[0, 50, 150, 400].forEach((ms) => setTimeout(run, ms))
+                            })
+                        JS,
+                        'x-on:livewire:navigated.window' => <<<'JS'
+                            $nextTick(() => {
+                                const run = () => document.getElementById('meal-entry-scan-code-input')?.focus({ preventScroll: true })
+                                setTimeout(run, 80)
+                                ;[200, 500].forEach((ms) => setTimeout(run, ms))
+                            })
+                        JS,
                     ]),
                 RenderHook::make(PanelsRenderHook::RESOURCE_PAGES_LIST_RECORDS_TABLE_BEFORE),
                 EmbeddedTable::make(),

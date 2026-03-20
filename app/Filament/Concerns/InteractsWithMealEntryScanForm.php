@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\DB;
 
 trait InteractsWithMealEntryScanForm
 {
+    public const MEAL_ENTRY_SCAN_CODE_INPUT_ID = 'meal-entry-scan-code-input';
+
+    public const MEAL_ENTRY_SCAN_PRICE_INPUT_ID = 'meal-entry-scan-price-input';
+
     /**
      * @var array<string, string>
      */
@@ -46,15 +50,26 @@ trait InteractsWithMealEntryScanForm
                             ->label('Kode pelanggan')
                             ->placeholder('Contoh: 1, 2, 42…')
                             ->autofocus(fn (): bool => ! $this->mealEntryScanCustomerLoaded)
-                            ->extraInputAttributes([
-                                'autocomplete' => 'off',
-                                'autocorrect' => 'off',
-                                'spellcheck' => 'false',
-                                'inputmode' => 'numeric',
-                                'tabindex' => '1',
-                                'x-ref' => 'mealEntryScanCodeInput',
-                                'wire:keydown.enter.prevent' => 'mealEntryScanLoadCustomer',
-                            ]),
+                            ->extraInputAttributes(function (): array {
+                                $attrs = [
+                                    'id' => self::MEAL_ENTRY_SCAN_CODE_INPUT_ID,
+                                    'autocomplete' => 'off',
+                                    'autocorrect' => 'off',
+                                    'spellcheck' => 'false',
+                                    'inputmode' => 'numeric',
+                                    'tabindex' => '1',
+                                    'x-ref' => 'mealEntryScanCodeInput',
+                                    'wire:keydown.enter.prevent' => 'mealEntryScanLoadCustomer',
+                                ];
+
+                                // Scanner "System" sering pakai suffix Tab (bukan Enter). Hanya saat belum load:
+                                // setelah load, biarkan Tab pindah ke field harga (tabindex 2).
+                                if (! $this->mealEntryScanCustomerLoaded) {
+                                    $attrs['wire:keydown.tab.prevent'] = 'mealEntryScanLoadCustomer';
+                                }
+
+                                return $attrs;
+                            }),
                     ]),
                 Section::make('Data pelanggan')
                     ->compact()
@@ -85,11 +100,13 @@ trait InteractsWithMealEntryScanForm
                             ->prefix('Rp')
                             ->placeholder('15.000')
                             ->extraInputAttributes([
+                                'id' => self::MEAL_ENTRY_SCAN_PRICE_INPUT_ID,
                                 'autocomplete' => 'off',
                                 'inputmode' => 'numeric',
                                 'tabindex' => '2',
                                 'x-ref' => 'mealEntryScanPriceInput',
                                 'wire:keydown.enter.prevent' => 'mealEntryScanCreateEntry',
+                                'wire:keydown.tab.prevent' => 'mealEntryScanCreateEntry',
                             ])
                             ->live()
                             ->afterStateUpdated(function (Set $set, mixed $state): void {
@@ -144,7 +161,7 @@ trait InteractsWithMealEntryScanForm
                 ->danger()
                 ->send();
 
-            $this->dispatch('meal-entry-scan-focus-code');
+            $this->mealEntryScanFocusCode();
 
             return;
         }
@@ -158,14 +175,14 @@ trait InteractsWithMealEntryScanForm
         $this->mealEntryScanData['workplace_name'] = $customer->workplace?->name ?? '';
         $this->mealEntryScanData['price'] = '';
 
-        $this->dispatch('meal-entry-scan-focus-price');
+        $this->mealEntryScanFocusPrice();
     }
 
     public function mealEntryScanCreateEntry(): void
     {
         if (! $this->mealEntryScanCustomerLoaded || ! $this->mealEntryScanCustomerId) {
             $this->mealEntryScanReset();
-            $this->dispatch('meal-entry-scan-focus-code');
+            $this->mealEntryScanFocusCode();
 
             return;
         }
@@ -178,7 +195,7 @@ trait InteractsWithMealEntryScanForm
                 ->danger()
                 ->send();
 
-            $this->dispatch('meal-entry-scan-focus-price');
+            $this->mealEntryScanFocusPrice();
 
             return;
         }
@@ -220,13 +237,63 @@ trait InteractsWithMealEntryScanForm
         // Refresh tabel dulu (list), baru fokus ke kode — supaya re-render tidak mencuri fokus.
         $this->afterMealEntryScanCreated();
 
-        $this->dispatch('meal-entry-scan-focus-code');
+        $this->mealEntryScanFocusCode();
     }
 
     /**
      * Dipanggil setelah entri baru berhasil disimpan (mis. refresh tabel di halaman list).
      */
     protected function afterMealEntryScanCreated(): void {}
+
+    protected function mealEntryScanFocusCode(): void
+    {
+        $this->dispatch('meal-entry-scan-focus-code');
+        $this->js($this->mealEntryScanFocusCodeJsExpression());
+    }
+
+    protected function mealEntryScanFocusPrice(): void
+    {
+        $this->dispatch('meal-entry-scan-focus-price');
+        $this->js($this->mealEntryScanFocusPriceJsExpression());
+    }
+
+    protected function mealEntryScanFocusCodeJsExpression(): string
+    {
+        $id = self::MEAL_ENTRY_SCAN_CODE_INPUT_ID;
+
+        return <<<JS
+            (function () {
+                const id = '{$id}';
+                const run = () => {
+                    const el = document.getElementById(id);
+                    if (el && ! el.disabled) {
+                        el.focus({ preventScroll: true });
+                    }
+                };
+                run();
+                [1, 50, 120, 300, 600, 1000].forEach((ms) => setTimeout(run, ms));
+            })();
+        JS;
+    }
+
+    protected function mealEntryScanFocusPriceJsExpression(): string
+    {
+        $id = self::MEAL_ENTRY_SCAN_PRICE_INPUT_ID;
+
+        return <<<JS
+            (function () {
+                const id = '{$id}';
+                const run = () => {
+                    const el = document.getElementById(id);
+                    if (el && ! el.disabled) {
+                        el.focus({ preventScroll: true });
+                    }
+                };
+                run();
+                [1, 50, 120, 300, 600].forEach((ms) => setTimeout(run, ms));
+            })();
+        JS;
+    }
 
     protected function mealEntryScanReset(): void
     {
