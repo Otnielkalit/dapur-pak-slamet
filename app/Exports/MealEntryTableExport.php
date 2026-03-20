@@ -22,6 +22,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 final class MealEntryTableExport
 {
+    private const CSV_DATE_FORMAT = 'd/m/Y H:i';
+
     private const XLSX_DATETIME_FORMAT = 'yyyy-mm-dd hh:mm:ss';
 
     private static function xlsxColumnStyles(): array
@@ -110,14 +112,14 @@ final class MealEntryTableExport
     private static function rowValuesCsv(MealEntry $entry): array
     {
         return [
-            $entry->customer_code,
-            $entry->customer_name,
+            (string) ($entry->customer_code ?? ''),
+            (string) ($entry->customer_name ?? ''),
             $entry->customer_phone ?? '',
-            $entry->workplace_name,
-            $entry->eaten_at?->format('Y-m-d H:i:s') ?? '',
-            $entry->price,
-            $entry->paid ? 'lunas' : 'belum lunas',
-            $entry->paid_at?->format('Y-m-d H:i:s') ?? '',
+            (string) ($entry->workplace_name ?? ''),
+            $entry->eaten_at?->format(self::CSV_DATE_FORMAT) ?? '',
+            'Rp '.number_format((int) ($entry->price ?? 0), 0, ',', '.'),
+            $entry->paid ? 'Lunas' : 'Belum lunas',
+            $entry->paid_at?->format(self::CSV_DATE_FORMAT) ?? '',
         ];
     }
 
@@ -194,6 +196,12 @@ final class MealEntryTableExport
     public static function downloadCsv(Builder $query): StreamedResponse
     {
         $csv = CsvWriter::createFromFileObject(new SplTempFileObject);
+        $csv->setDelimiter(';');
+        $csv->setEscape('\\');
+        $csv->setEnclosure('"');
+
+        // Membantu Excel (khusus regional Indonesia) membaca delimiter ';' dengan konsisten.
+        $csv->insertOne(['sep=;']);
         $csv->insertOne(self::headers());
 
         foreach ($query->clone()->cursor() as $mealEntry) {
