@@ -7,15 +7,15 @@ use App\Filament\Resources\CustomerResource\Pages\EditCustomer;
 use App\Filament\Resources\CustomerResource\Pages\ListCustomers;
 use App\Models\Customer;
 use App\Models\Workplace;
+use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Resources\Resource;
 use Filament\Resources\Pages\PageRegistration;
+use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Tables\Actions\Action as TableAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
@@ -24,6 +24,7 @@ class CustomerResource extends Resource
     protected static ?string $model = Customer::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
+
     protected static ?string $navigationLabel = 'Pelanggan';
 
     public static function form(Schema $schema): Schema
@@ -51,7 +52,7 @@ class CustomerResource extends Resource
     {
         return $table
             ->headerActions([
-                \Filament\Actions\CreateAction::make(),
+                CreateAction::make(),
             ])
             ->columns([
                 TextColumn::make('code')->label('Kode')->searchable()->sortable(),
@@ -59,8 +60,17 @@ class CustomerResource extends Resource
                 TextColumn::make('phone')->label('Nomor HP'),
                 TextColumn::make('workplace.name')->label('Tempat Kerja')->sortable(),
             ])
+            ->filters([
+                SelectFilter::make('workplace_id')
+                    ->label('Nama perusahaan')
+                    ->placeholder('Semua perusahaan')
+                    ->options(fn (): array => Workplace::query()
+                        ->orderBy('name')
+                        ->pluck('name', 'id')
+                        ->toArray()),
+            ])
             ->recordActions([
-                \Filament\Actions\EditAction::make(),
+                EditAction::make(),
             ])
             ->bulkActions([]);
     }
@@ -98,4 +108,3 @@ class CustomerResource extends Resource
         ];
     }
 }
-
