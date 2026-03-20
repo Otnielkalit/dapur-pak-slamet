@@ -16,9 +16,6 @@ final class MealEntryTableExport
 {
     private const CSV_DATE_FORMAT = 'd/m/Y H:i';
 
-    /** Non-breaking space (UTF-8) — dipakai memanjangkan header agar Excel kurang “mepet”. */
-    private const NBSP = "\xC2\xA0";
-
     /**
      * @return list<string>
      */
@@ -34,25 +31,6 @@ final class MealEntryTableExport
             'Status',
             'Tanggal Lunas',
         ];
-    }
-
-    /**
-     * Header dengan padding NBSP supaya Excel biasanya membuka kolom sedikit lebih lebar.
-     * (File CSV tidak bisa menyimpan lebar kolom; ini hanya “hint” visual.)
-     *
-     * @return list<string>
-     */
-    private static function csvHeaderRowWithWidthHint(): array
-    {
-        $labels = self::headers();
-        /** @var list<int> target lebar kira-kira (jumlah karakter termasuk label) */
-        $targets = [16, 36, 22, 34, 24, 18, 18, 24];
-
-        return array_map(static function (string $label, int $target): string {
-            $need = max(0, $target - mb_strlen($label));
-
-            return $label.str_repeat(self::NBSP, $need);
-        }, $labels, $targets);
     }
 
     /**
@@ -121,7 +99,7 @@ final class MealEntryTableExport
 
         // Membantu Excel (khusus regional Indonesia) membaca delimiter ';' dengan konsisten.
         $csv->insertOne(['sep=;']);
-        $csv->insertOne(self::csvHeaderRowWithWidthHint());
+        $csv->insertOne(self::headers());
 
         foreach ($query->clone()->cursor() as $mealEntry) {
             /** @var MealEntry $mealEntry */
