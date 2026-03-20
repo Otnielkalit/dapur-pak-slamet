@@ -45,11 +45,13 @@ trait InteractsWithMealEntryScanForm
                         TextInput::make('code')
                             ->label('Kode pelanggan')
                             ->placeholder('Contoh: 1, 2, 42…')
+                            ->autofocus(fn (): bool => ! $this->mealEntryScanCustomerLoaded)
                             ->extraInputAttributes([
                                 'autocomplete' => 'off',
                                 'autocorrect' => 'off',
                                 'spellcheck' => 'false',
                                 'inputmode' => 'numeric',
+                                'tabindex' => '1',
                                 'x-ref' => 'mealEntryScanCodeInput',
                                 'wire:keydown.enter.prevent' => 'mealEntryScanLoadCustomer',
                             ]),
@@ -85,6 +87,7 @@ trait InteractsWithMealEntryScanForm
                             ->extraInputAttributes([
                                 'autocomplete' => 'off',
                                 'inputmode' => 'numeric',
+                                'tabindex' => '2',
                                 'x-ref' => 'mealEntryScanPriceInput',
                                 'wire:keydown.enter.prevent' => 'mealEntryScanCreateEntry',
                             ])
@@ -214,9 +217,10 @@ trait InteractsWithMealEntryScanForm
 
         $this->mealEntryScanReset();
 
-        $this->dispatch('meal-entry-scan-focus-code');
-
+        // Refresh tabel dulu (list), baru fokus ke kode — supaya re-render tidak mencuri fokus.
         $this->afterMealEntryScanCreated();
+
+        $this->dispatch('meal-entry-scan-focus-code');
     }
 
     /**

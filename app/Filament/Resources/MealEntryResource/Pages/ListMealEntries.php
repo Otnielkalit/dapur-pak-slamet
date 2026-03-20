@@ -32,8 +32,23 @@ class ListMealEntries extends ListRecords
                     ->extraAttributes([
                         'class' => 'mb-6',
                         'x-data' => '',
-                        'x-on:meal-entry-scan-focus-code.window' => '$nextTick(() => $refs.mealEntryScanCodeInput?.focus())',
-                        'x-on:meal-entry-scan-focus-price.window' => '$nextTick(() => $refs.mealEntryScanPriceInput?.focus())',
+                        'x-init' => <<<'JS'
+                            $nextTick(() => {
+                                const focusCode = (opts = {}) => {
+                                    const el = $refs.mealEntryScanCodeInput
+                                    if (el && ! el.disabled) {
+                                        el.focus({ preventScroll: true, ...opts })
+                                    }
+                                }
+                                focusCode()
+                                setTimeout(() => focusCode(), 50)
+                                setTimeout(() => focusCode(), 200)
+                                setTimeout(() => focusCode(), 600)
+                            })
+                        JS,
+                        'x-on:meal-entry-scan-focus-code.window' => '$nextTick(() => $refs.mealEntryScanCodeInput?.focus({ preventScroll: true }))',
+                        'x-on:meal-entry-scan-focus-price.window' => '$nextTick(() => $refs.mealEntryScanPriceInput?.focus({ preventScroll: true }))',
+                        'x-on:livewire:navigated.window' => '$nextTick(() => { setTimeout(() => $refs.mealEntryScanCodeInput?.focus({ preventScroll: true }), 80) })',
                     ]),
                 RenderHook::make(PanelsRenderHook::RESOURCE_PAGES_LIST_RECORDS_TABLE_BEFORE),
                 EmbeddedTable::make(),

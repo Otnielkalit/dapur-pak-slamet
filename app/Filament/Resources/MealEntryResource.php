@@ -98,11 +98,13 @@ class MealEntryResource extends Resource
                 Action::make('exportXlsx')
                     ->label('Export XLSX')
                     ->icon('heroicon-o-arrow-down-tray')
+                    ->extraAttributes(['tabindex' => '-1'])
                     ->action(fn ($livewire) => MealEntryTableExport::downloadXlsx($livewire->getTableQueryForExport())),
                 Action::make('exportCsv')
                     ->label('Export CSV')
                     ->icon('heroicon-o-document-text')
                     ->color('gray')
+                    ->extraAttributes(['tabindex' => '-1'])
                     ->action(fn ($livewire) => MealEntryTableExport::downloadCsv($livewire->getTableQueryForExport())),
             ])
             ->recordActions([
