@@ -1,0 +1,143 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Exports\MealEntryTableExport;
+use App\Filament\Resources\MealEntryResource\Pages\ListMealEntries;
+use App\Models\MealEntry;
+use App\Models\Workplace;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Resources\Pages\PageRegistration;
+use Filament\Resources\Resource;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+
+class MealEntryResource extends Resource
+{
+    protected static ?string $model = MealEntry::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    protected static ?string $navigationLabel = 'Entry Makanan';
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->defaultSort('eaten_at', 'desc')
+            ->deferFilters(false)
+            ->filtersLayout(FiltersLayout::AboveContent)
+            ->filtersFormColumns([
+                'default' => 1,
+                'sm' => 2,
+                'lg' => 4,
+            ])
+            ->columns([
+                TextColumn::make('customer_code')->label('Code')->searchable()->sortable(),
+                TextColumn::make('customer_name')->label('Nama')->searchable()->sortable(),
+                TextColumn::make('customer_phone')->label('Nomor HP'),
+                TextColumn::make('workplace_name')->label('Tempat Kerja')->sortable(),
+                TextColumn::make('eaten_at')->label('Tanggal Makan')->dateTime('Y-m-d H:i')->sortable(),
+                TextColumn::make('price')->label('Harga')->money('IDR')->sortable(),
+                TextColumn::make('paid')
+                    ->label('Status')
+                    ->badge()
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'lunas' : 'belum lunas'),
+            ])
+            ->filters([
+                SelectFilter::make('workplace_id')
+                    ->label('Tempat Kerja')
+                    ->placeholder('Semua tempat kerja')
+                    ->options(fn (): array => Workplace::query()
+                        ->orderBy('name')
+                        ->pluck('name', 'id')
+                        ->toArray()),
+                SelectFilter::make('paid')
+                    ->label('Status')
+                    ->placeholder('Semua status')
+                    ->options([
+                        1 => 'lunas',
+                        0 => 'belum lunas',
+                    ]),
+                Filter::make('eaten_at')
+                    ->label('Tanggal makan (dari – sampai)')
+                    ->columns(2)
+                    ->columnSpan(['default' => 'full', 'lg' => 2])
+                    ->schema([
+                        DatePicker::make('from')->label('Dari'),
+                        DatePicker::make('until')->label('Sampai'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(filled($data['from'] ?? null), fn (Builder $q) => $q->whereDate('eaten_at', '>=', $data['from']))
+                            ->when(filled($data['until'] ?? null), fn (Builder $q) => $q->whereDate('eaten_at', '<=', $data['until']));
+                    }),
+            ])
+            ->headerActions([
+                Action::make('exportXlsx')
+                    ->label('Export XLSX')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(fn ($livewire) => MealEntryTableExport::downloadXlsx($livewire->getTableQueryForExport())),
+                Action::make('exportCsv')
+                    ->label('Export CSV')
+                    ->icon('heroicon-o-document-text')
+                    ->color('gray')
+                    ->action(fn ($livewire) => MealEntryTableExport::downloadCsv($livewire->getTableQueryForExport())),
+            ])
+            ->recordActions([
+                Action::make('togglePaid')
+                    ->label(fn (MealEntry $record): string => $record->paid ? 'Set belum lunas' : 'Set lunas')
+                    ->icon(fn (MealEntry $record): string => $record->paid ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                    ->action(function (MealEntry $record): void {
+                        $record->togglePaid(! $record->paid);
+                    }),
+            ])
+            ->bulkActions([
+                BulkAction::make('markPaid')
+                    ->label('Set lunas')
+                    ->action(function ($records): void {
+                        foreach ($records as $record) {
+                            $record->togglePaid(true);
+                        }
+                    }),
+                BulkAction::make('markUnpaid')
+                    ->label('Set belum lunas')
+                    ->action(function ($records): void {
+                        foreach ($records as $record) {
+                            $record->togglePaid(false);
+                        }
+                    }),
+            ]);
+    }
+
+    /**
+     * @return array<string, PageRegistration>
+     */
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListMealEntries::route('/'),
+        ];
+    }
+}
