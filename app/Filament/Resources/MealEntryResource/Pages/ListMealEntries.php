@@ -34,6 +34,18 @@ class ListMealEntries extends ListRecords
                         'x-data' => '{}',
                         'x-init' => <<<'JS'
                             $nextTick(() => {
+                                const lockTableSearchTabOrder = () => {
+                                    // Agar scanner/tab tidak lari ke kotak search tabel,
+                                    // sementara kita memaksa fokus ke input scan/kode.
+                                    const nodes = document.querySelectorAll(
+                                        'input[type=search], input[name=tableSearch], input[wire\\:model*=tableSearch]'
+                                    )
+
+                                    nodes.forEach((el) => el?.setAttribute('tabindex', '-1'))
+                                }
+
+                                lockTableSearchTabOrder()
+
                                 const focusById = (id) => {
                                     const el = document.getElementById(id)
                                     if (el && ! el.disabled) {
@@ -48,6 +60,16 @@ class ListMealEntries extends ListRecords
                         JS,
                         'x-on:meal-entry-scan-focus-code.window' => <<<'JS'
                             $nextTick(() => {
+                                const lockTableSearchTabOrder = () => {
+                                    const nodes = document.querySelectorAll(
+                                        'input[type=search], input[name=tableSearch], input[wire\\:model*=tableSearch]'
+                                    )
+
+                                    nodes.forEach((el) => el?.setAttribute('tabindex', '-1'))
+                                }
+
+                                lockTableSearchTabOrder()
+
                                 const run = () => document.getElementById('meal-entry-scan-code-input')?.focus({ preventScroll: true })
                                 run()
                                 ;[0, 50, 150, 400].forEach((ms) => setTimeout(run, ms))
@@ -55,6 +77,16 @@ class ListMealEntries extends ListRecords
                         JS,
                         'x-on:meal-entry-scan-focus-price.window' => <<<'JS'
                             $nextTick(() => {
+                                const lockTableSearchTabOrder = () => {
+                                    const nodes = document.querySelectorAll(
+                                        'input[type=search], input[name=tableSearch], input[wire\\:model*=tableSearch]'
+                                    )
+
+                                    nodes.forEach((el) => el?.setAttribute('tabindex', '-1'))
+                                }
+
+                                lockTableSearchTabOrder()
+
                                 const run = () => document.getElementById('meal-entry-scan-price-input')?.focus({ preventScroll: true })
                                 run()
                                 ;[0, 50, 150, 400].forEach((ms) => setTimeout(run, ms))
@@ -62,6 +94,16 @@ class ListMealEntries extends ListRecords
                         JS,
                         'x-on:livewire:navigated.window' => <<<'JS'
                             $nextTick(() => {
+                                const lockTableSearchTabOrder = () => {
+                                    const nodes = document.querySelectorAll(
+                                        'input[type=search], input[name=tableSearch], input[wire\\:model*=tableSearch]'
+                                    )
+
+                                    nodes.forEach((el) => el?.setAttribute('tabindex', '-1'))
+                                }
+
+                                lockTableSearchTabOrder()
+
                                 const run = () => document.getElementById('meal-entry-scan-code-input')?.focus({ preventScroll: true })
                                 setTimeout(run, 80)
                                 ;[200, 500].forEach((ms) => setTimeout(run, ms))

@@ -46,8 +46,7 @@ class MealEntryResource extends Resource
     {
         return $table
             ->defaultSort('eaten_at', 'desc')
-            // Hilangkan kotak "cari" di toolbar — sering jadi target Tab setelah scan / Enter.
-            ->searchable(false)
+            ->searchable()
             ->deferFilters(false)
             ->filtersLayout(FiltersLayout::AboveContent)
             ->filtersFormColumns([
