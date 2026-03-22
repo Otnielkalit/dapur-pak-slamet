@@ -6,29 +6,22 @@ use App\Filament\Resources\WorkplaceResource\Pages\CreateWorkplace;
 use App\Filament\Resources\WorkplaceResource\Pages\EditWorkplace;
 use App\Filament\Resources\WorkplaceResource\Pages\ListWorkplaces;
 use App\Models\Workplace;
+use Filament\Actions\CreateAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
-use Filament\Resources\Resource;
 use Filament\Resources\Pages\PageRegistration;
-use Filament\Tables\Table;
+use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
-use Filament\Tables\Actions\Action as TableAction;
-use Filament\Actions\EditAction;
-use Filament\Tables\Actions\EditAction as TableEditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Actions\ExportAction;
-use Filament\Actions\DeleteBulkAction as TableDeleteBulkAction;
-use Filament\Actions\BulkAction;
-use Filament\Actions\Exports\Enums\ExportFormat;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
 class WorkplaceResource extends Resource
 {
     protected static ?string $model = Workplace::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
+
     protected static ?string $navigationLabel = 'Tempat Kerja';
 
     public static function form(Schema $schema): Schema
@@ -45,7 +38,7 @@ class WorkplaceResource extends Resource
     {
         return $table
             ->headerActions([
-                \Filament\Actions\CreateAction::make(),
+                CreateAction::make(),
             ])
             ->columns([
                 TextColumn::make('name')
@@ -54,7 +47,7 @@ class WorkplaceResource extends Resource
                     ->sortable(),
             ])
             ->recordActions([
-                \Filament\Actions\EditAction::make(),
+                EditAction::make(),
             ])
             ->bulkActions([]);
     }
@@ -92,4 +85,3 @@ class WorkplaceResource extends Resource
         ];
     }
 }
-

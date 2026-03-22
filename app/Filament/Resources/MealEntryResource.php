@@ -23,7 +23,7 @@ class MealEntryResource extends Resource
 {
     protected static ?string $model = MealEntry::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     protected static ?string $navigationLabel = 'Entry Makanan';
 
@@ -59,12 +59,21 @@ class MealEntryResource extends Resource
                 TextColumn::make('customer_name')->label('Nama')->searchable()->sortable(),
                 TextColumn::make('customer_phone')->label('Nomor HP'),
                 TextColumn::make('workplace_name')->label('Tempat Kerja')->sortable(),
-                TextColumn::make('eaten_at')->label('Tanggal Makan')->dateTime('Y-m-d H:i')->sortable(),
+                TextColumn::make('eaten_at')
+                    ->label('Tanggal Makan')
+                    // DB menyimpan UTC; tampilkan jam Indonesia (WIB).
+                    ->dateTime('Y-m-d H:i', 'Asia/Jakarta')
+                    ->sortable(),
                 TextColumn::make('price')->label('Harga')->money('IDR')->sortable(),
                 TextColumn::make('paid')
                     ->label('Status')
                     ->badge()
                     ->formatStateUsing(fn (bool $state): string => $state ? 'lunas' : 'belum lunas'),
+                TextColumn::make('paid_at')
+                    ->label('Tanggal lunas')
+                    ->dateTime('Y-m-d H:i', 'Asia/Jakarta')
+                    ->sortable()
+                    ->placeholder('—'),
             ])
             ->filters([
                 SelectFilter::make('workplace_id')

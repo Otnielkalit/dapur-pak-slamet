@@ -73,28 +73,9 @@ trait InteractsWithMealEntryScanForm
                     ]),
                 Section::make('Data pelanggan')
                     ->compact()
-                    ->description('Isi harga, lalu Enter untuk menyimpan.')
+                    ->description('Isi harga di atas, lalu Enter untuk menyimpan. Detail pelanggan ada di bawah.')
                     ->visible(fn (): bool => $this->mealEntryScanCustomerLoaded)
                     ->schema([
-                        TextInput::make('customer_code')
-                            ->label('Kode')
-                            ->disabled()
-                            ->dehydrated(false),
-                        TextInput::make('customer_name')
-                            ->label('Nama')
-                            ->disabled()
-                            ->dehydrated(false),
-                        TextInput::make('customer_phone')
-                            ->label('Nomor HP')
-                            ->disabled()
-                            ->dehydrated(false)
-                            ->placeholder('—'),
-                        TextInput::make('workplace_name')
-                            ->label('Tempat kerja')
-                            ->disabled()
-                            ->dehydrated(false)
-                            ->placeholder('—')
-                            ->columnSpanFull(),
                         TextInput::make('price')
                             ->label('Harga')
                             ->prefix('Rp')
@@ -135,6 +116,24 @@ trait InteractsWithMealEntryScanForm
                                 }
                             })
                             ->columnSpanFull(),
+                        TextInput::make('customer_code')
+                            ->label('Kode')
+                            ->disabled()
+                            ->dehydrated(false),
+                        TextInput::make('customer_name')
+                            ->label('Nama')
+                            ->disabled()
+                            ->dehydrated(false),
+                        TextInput::make('customer_phone')
+                            ->label('Nomor HP')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->placeholder('—'),
+                        TextInput::make('workplace_name')
+                            ->label('Tempat kerja')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->placeholder('—'),
                     ])
                     ->columns(2),
             ]);

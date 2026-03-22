@@ -1,4 +1,4 @@
-# Dapur Pak Slam
+# Dapur Pak Slamet
 
 Aplikasi admin berbasis web untuk **mengelola entri makan kantin**: data pelanggan (kode unik / barcode), tempat kerja, pencatatan makan per scan, status lunas/belum lunas, filter laporan, dan export Excel/CSV.
 

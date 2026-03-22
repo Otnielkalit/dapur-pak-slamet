@@ -8,6 +8,11 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateCustomer extends CreateRecord
 {
     protected static string $resource = CustomerResource::class;
-    protected static ?string $title = 'Tambah Pelanggan';
-}
 
+    protected static ?string $title = 'Tambah Pelanggan';
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResourceUrl('index');
+    }
+}

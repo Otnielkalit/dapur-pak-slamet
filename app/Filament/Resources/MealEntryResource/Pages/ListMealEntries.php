@@ -10,6 +10,7 @@ use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Components\Form as FormLayout;
 use Filament\Schemas\Components\RenderHook;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Filament\View\PanelsRenderHook;
 
 class ListMealEntries extends ListRecords
@@ -19,6 +20,9 @@ class ListMealEntries extends ListRecords
     protected static string $resource = MealEntryResource::class;
 
     protected static ?string $title = 'Entry Makanan';
+
+    /** Lebar konten penuh (tanpa max-width tengah) — form + tabel memakai lebar layar. */
+    protected Width|string|null $maxContentWidth = Width::Full;
 
     public function content(Schema $schema): Schema
     {

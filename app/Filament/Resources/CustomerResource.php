@@ -7,12 +7,15 @@ use App\Filament\Resources\CustomerResource\Pages\EditCustomer;
 use App\Filament\Resources\CustomerResource\Pages\ListCustomers;
 use App\Models\Customer;
 use App\Models\Workplace;
+use App\Support\WhatsAppLink;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\PageRegistration;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -40,8 +43,23 @@ class CustomerResource extends Resource
             TextInput::make('phone')
                 ->label('Nomor HP')
                 ->tel()
+                ->live()
                 ->nullable()
-                ->maxLength(30),
+                ->maxLength(30)
+                ->helperText(
+                    'Isi nomor lalu klik tombol Kirim WA untuk uji coba sebelum menyimpan. Pesan dikirim lewat WhatsApp yang sedang Anda login (disarankan nomor bisnis '.config('whatsapp.business_number').').',
+                )
+                ->suffixAction(
+                    Action::make('sendWelcomeWhatsApp')
+                        ->label('Kirim WA')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->color('success')
+                        ->tooltip('Buka WhatsApp dengan pesan sambutan ke nomor di atas')
+                        ->url(fn (Get $get): string => WhatsAppLink::buildWelcomeUrl($get('phone')) ?? '#')
+                        ->openUrlInNewTab()
+                        ->disabled(fn (Get $get): bool => WhatsAppLink::normalizeToWaDigits($get('phone')) === null),
+                    true,
+                ),
             Select::make('workplace_id')
                 ->relationship('workplace', 'name')
                 ->required(),

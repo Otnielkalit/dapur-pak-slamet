@@ -7,12 +7,13 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form as FormLayout;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 
 class MealEntryPage extends Page
 {
     use InteractsWithMealEntryScanForm;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-qr-code';
 
     protected static ?string $navigationLabel = 'Entry Data Makanan';
 
@@ -21,6 +22,8 @@ class MealEntryPage extends Page
     protected static ?int $navigationSort = 1;
 
     protected string $view = 'filament.pages.meal-entry';
+
+    protected Width|string|null $maxContentWidth = Width::Full;
 
     public function content(Schema $schema): Schema
     {

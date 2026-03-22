@@ -8,6 +8,11 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateWorkplace extends CreateRecord
 {
     protected static string $resource = WorkplaceResource::class;
-    protected static ?string $title = 'Tambah Tempat Kerja';
-}
 
+    protected static ?string $title = 'Tambah Tempat Kerja';
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResourceUrl('index');
+    }
+}
