@@ -37,34 +37,37 @@ class MakeFilamentUserCommand extends MakeUserCommand
      */
     protected function getUserData(): array
     {
+        $name = $this->options['name'] ?? text(
+            label: 'Name',
+            required: true,
+        );
+
+        $username = $this->options['username'] ?? text(
+            label: 'Username',
+            required: true,
+            validate: fn (string $value): ?string => match (true) {
+                strlen($value) < 3 => 'Username minimal 3 karakter.',
+                ! preg_match('/^[a-zA-Z0-9._-]+$/', $value) => 'Hanya huruf, angka, titik, strip, dan underscore.',
+                static::getUserModel()::query()->where('username', $value)->exists() => 'Username sudah dipakai.',
+                default => null,
+            },
+        );
+
+        $email = $this->normalizeOptionalEmail($this->options['email'] ?? text(
+            label: 'Email address (opsional)',
+            required: false,
+            validate: fn (?string $value): ?string => $this->validateOptionalEmail($value),
+        ));
+
         $plainPassword = $this->options['password'] ?? password(
             label: 'Password',
             required: true,
         );
 
         return [
-            'name' => $this->options['name'] ?? text(
-                label: 'Name',
-                required: true,
-            ),
-
-            'username' => $this->options['username'] ?? text(
-                label: 'Username',
-                required: true,
-                validate: fn (string $username): ?string => match (true) {
-                    strlen($username) < 3 => 'Username minimal 3 karakter.',
-                    ! preg_match('/^[a-zA-Z0-9._-]+$/', $username) => 'Hanya huruf, angka, titik, strip, dan underscore.',
-                    static::getUserModel()::query()->where('username', $username)->exists() => 'Username sudah dipakai.',
-                    default => null,
-                },
-            ),
-
-            'email' => $this->normalizeOptionalEmail($this->options['email'] ?? text(
-                label: 'Email address (opsional)',
-                required: false,
-                validate: fn (?string $email): ?string => $this->validateOptionalEmail($email),
-            )),
-
+            'name' => $name,
+            'username' => $username,
+            'email' => $email,
             'password' => Hash::make($plainPassword),
         ];
     }
