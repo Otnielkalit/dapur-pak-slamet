@@ -5,16 +5,20 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CustomerResource\Pages\CreateCustomer;
 use App\Filament\Resources\CustomerResource\Pages\EditCustomer;
 use App\Filament\Resources\CustomerResource\Pages\ListCustomers;
+use App\Filament\Resources\CustomerResource\Pages\ViewCustomer;
 use App\Models\Customer;
 use App\Models\Workplace;
 use App\Support\WhatsAppLink;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Pages\PageRegistration;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -29,6 +33,20 @@ class CustomerResource extends Resource
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
 
     protected static ?string $navigationLabel = 'Pelanggan';
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return $schema->schema([
+            Section::make('Data pelanggan')
+                ->columns(2)
+                ->schema([
+                    TextEntry::make('code')->label('Kode'),
+                    TextEntry::make('name')->label('Nama'),
+                    TextEntry::make('phone')->label('Nomor HP')->placeholder('—'),
+                    TextEntry::make('workplace.name')->label('Tempat Kerja'),
+                ]),
+        ]);
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -88,6 +106,7 @@ class CustomerResource extends Resource
                         ->toArray()),
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
             ])
             ->bulkActions([]);
@@ -109,6 +128,11 @@ class CustomerResource extends Resource
         return true;
     }
 
+    public static function canView(Model $record): bool
+    {
+        return true;
+    }
+
     public static function canDelete(Model $record): bool
     {
         return true;
@@ -122,6 +146,7 @@ class CustomerResource extends Resource
         return [
             'index' => ListCustomers::route('/'),
             'create' => CreateCustomer::route('/create'),
+            'view' => ViewCustomer::route('/{record}'),
             'edit' => EditCustomer::route('/{record}/edit'),
         ];
     }
