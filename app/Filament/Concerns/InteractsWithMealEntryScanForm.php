@@ -44,7 +44,9 @@ trait InteractsWithMealEntryScanForm
             ->components([
                 Section::make('Scan / ketik kode')
                     ->compact()
-                    ->description('Tekan Enter setelah scan atau selesai mengetik kode.')
+                    ->description(fn (): string => $this->mealEntryScanCustomerLoaded
+                        ? 'Isi harga tepat di bawah kode, lalu Enter untuk menyimpan.'
+                        : 'Tekan Enter setelah scan atau selesai mengetik kode.')
                     ->schema([
                         TextInput::make('code')
                             ->label('Kode pelanggan')
@@ -71,16 +73,11 @@ trait InteractsWithMealEntryScanForm
 
                                 return $attrs;
                             }),
-                    ]),
-                Section::make('Data pelanggan')
-                    ->compact()
-                    ->description('Isi harga di atas, lalu Enter untuk menyimpan. Detail pelanggan ada di bawah.')
-                    ->visible(fn (): bool => $this->mealEntryScanCustomerLoaded)
-                    ->schema([
                         TextInput::make('price')
                             ->label('Harga')
                             ->prefix('Rp')
                             ->placeholder('15.000')
+                            ->visible(fn (): bool => $this->mealEntryScanCustomerLoaded)
                             ->extraInputAttributes([
                                 'id' => self::MEAL_ENTRY_SCAN_PRICE_INPUT_ID,
                                 'autocomplete' => 'off',
@@ -118,6 +115,12 @@ trait InteractsWithMealEntryScanForm
                                 }
                             })
                             ->columnSpanFull(),
+                    ]),
+                Section::make('Data pelanggan')
+                    ->compact()
+                    ->description('Nama, HP, dan tempat kerja.')
+                    ->visible(fn (): bool => $this->mealEntryScanCustomerLoaded)
+                    ->schema([
                         TextInput::make('customer_code')
                             ->label('Kode')
                             ->disabled()
