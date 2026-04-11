@@ -7,7 +7,6 @@ use App\Models\MealEntry;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\DB;
 
@@ -76,8 +75,12 @@ trait InteractsWithMealEntryScanForm
                         TextInput::make('price')
                             ->label('Harga')
                             ->prefix('Rp')
-                            ->placeholder('15.000')
+                            ->placeholder('15000')
                             ->visible(fn (): bool => $this->mealEntryScanCustomerLoaded)
+                            // Jangan pakai live + format ribuan per ketikan: Livewire sempat
+                            // mengirim balik "1.500" saat user masih mengetik "15000" → nol hilang / delay.
+                            // Angka dikirim ke server saat Enter/Tab; parsing di mealEntryScanCreateEntry.
+                            ->live(condition: false)
                             ->extraInputAttributes([
                                 'id' => self::MEAL_ENTRY_SCAN_PRICE_INPUT_ID,
                                 'autocomplete' => 'off',
@@ -88,32 +91,6 @@ trait InteractsWithMealEntryScanForm
                                 'wire:keydown.enter.prevent' => 'mealEntryScanCreateEntry',
                                 'wire:keydown.tab.prevent' => 'mealEntryScanCreateEntry',
                             ])
-                            ->live()
-                            ->afterStateUpdated(function (Set $set, mixed $state): void {
-                                if ($state === null || $state === '') {
-                                    return;
-                                }
-
-                                $digits = preg_replace('/\D/', '', (string) $state);
-
-                                if ($digits === '') {
-                                    if ((string) $state !== '') {
-                                        $set('price', '');
-                                    }
-
-                                    return;
-                                }
-
-                                if (strlen($digits) > 15) {
-                                    $digits = substr($digits, 0, 15);
-                                }
-
-                                $formatted = number_format((int) $digits, 0, ',', '.');
-
-                                if ($formatted !== (string) $state) {
-                                    $set('price', $formatted);
-                                }
-                            })
                             ->columnSpanFull(),
                     ]),
                 Section::make('Data pelanggan')
