@@ -11,6 +11,8 @@ use App\Models\Workplace;
 use App\Support\WhatsAppLink;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
@@ -108,8 +110,11 @@ class CustomerResource extends Resource
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([]);
+            ->bulkActions([
+                DeleteBulkAction::make(),
+            ]);
     }
 
     // Untuk versi awal (1 admin lokal), izinkan semua aksi CRUD.
