@@ -13,7 +13,15 @@ class Customer extends Model
         'phone',
         'name',
         'workplace_id',
+        'is_blocked',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_blocked' => 'boolean',
+        ];
+    }
 
     public function workplace(): BelongsTo
     {

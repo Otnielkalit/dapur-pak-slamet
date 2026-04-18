@@ -15,6 +15,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Notifications\Notification;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
@@ -97,6 +98,11 @@ class CustomerResource extends Resource
                 TextColumn::make('name')->label('Nama')->searchable()->sortable(),
                 TextColumn::make('phone')->label('Nomor HP'),
                 TextColumn::make('workplace.name')->label('Tempat Kerja')->sortable(),
+                TextColumn::make('is_blocked')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (bool $state): string => $state ? 'danger' : 'success')
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'Diblokir' : 'Aktif'),
             ])
             ->filters([
                 SelectFilter::make('workplace_id')
@@ -112,6 +118,36 @@ class CustomerResource extends Resource
                     ->button(),
                 EditAction::make()
                     ->button(),
+                Action::make('unblock')
+                    ->label('Buka Blokir')
+                    ->icon('heroicon-o-play-circle')
+                    ->color('success')
+                    ->button()
+                    ->visible(fn (Customer $record): bool => (bool) $record->is_blocked)
+                    ->requiresConfirmation()
+                    ->action(function (Customer $record) {
+                        $record->update(['is_blocked' => false]);
+                        Notification::make()
+                            ->title('Blokir Dibuka')
+                            ->body("{$record->name} sekarang bisa bertransaksi kembali.")
+                            ->success()
+                            ->send();
+                    }),
+                Action::make('block')
+                    ->label('Hold')
+                    ->icon('heroicon-o-pause-circle')
+                    ->color('danger')
+                    ->button()
+                    ->visible(fn (Customer $record): bool => ! $record->is_blocked)
+                    ->requiresConfirmation()
+                    ->action(function (Customer $record) {
+                        $record->update(['is_blocked' => true]);
+                        Notification::make()
+                            ->title('Pelanggan di-HOLD')
+                            ->body("{$record->name} telah diblokir.")
+                            ->danger()
+                            ->send();
+                    }),
                 DeleteAction::make()
                     ->button(),
             ])

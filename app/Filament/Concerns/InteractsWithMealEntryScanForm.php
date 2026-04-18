@@ -4,8 +4,10 @@ namespace App\Filament\Concerns;
 
 use App\Models\Customer;
 use App\Models\MealEntry;
+use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Illuminate\Support\HtmlString;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
@@ -32,6 +34,8 @@ trait InteractsWithMealEntryScanForm
     public bool $mealEntryScanCustomerLoaded = false;
 
     public ?int $mealEntryScanCustomerId = null;
+
+    public ?string $blockedCustomerName = null;
 
     public function defaultMealEntryScanForm(Schema $schema): Schema
     {
@@ -167,6 +171,17 @@ trait InteractsWithMealEntryScanForm
                 ->title('Pelanggan tidak ada')
                 ->danger()
                 ->send();
+
+            $this->mealEntryScanFocusCode();
+
+            return;
+        }
+
+        if ($customer->is_blocked) {
+            $this->mealEntryScanReset();
+
+            $this->blockedCustomerName = $customer->name;
+            $this->mountAction('blockedCustomer');
 
             $this->mealEntryScanFocusCode();
 
@@ -319,5 +334,26 @@ trait InteractsWithMealEntryScanForm
             'customer_phone' => '',
             'workplace_name' => '',
         ];
+    }
+
+    public function blockedCustomerAction(): Action
+    {
+        return Action::make('blockedCustomer')
+            ->modalHeading('PELANGGAN DIBLOKIR!')
+            ->modalContent(fn () => new HtmlString("
+                <div class='flex flex-col items-center justify-center py-10 text-center w-full'>
+                    <div class='text-4xl font-extrabold text-danger-600 dark:text-danger-400 leading-tight'>
+                        Pelanggan dengan nama: <br>
+                        <span class='text-6xl block my-4 uppercase tracking-tight'>{$this->blockedCustomerName}</span>
+                        <span class='text-4xl'>di-HOLD</span>
+                    </div>
+                    <p class='mt-6 text-lg text-gray-500'>Segera hubungi admin untuk melunasi tunggakan.</p>
+                </div>
+            "))
+            ->modalIcon('heroicon-o-exclamation-triangle')
+            ->modalIconColor('danger')
+            ->modalAlignment(\Filament\Support\Enums\Alignment::Center)
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel('Tutup');
     }
 }

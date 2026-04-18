@@ -9,6 +9,7 @@ use App\Models\Workplace;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\DeleteAction;
+use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Pages\PageRegistration;
 use Filament\Resources\Resource;
@@ -126,6 +127,27 @@ class MealEntryResource extends Resource
                 DeleteAction::make()
                     ->button()
                     ->visible(fn (MealEntry $record): bool => (bool) $record->paid),
+                Action::make('holdCustomer')
+                    ->label('Hold Pelanggan')
+                    ->icon('heroicon-o-pause-circle')
+                    ->color('danger')
+                    ->button()
+                    ->requiresConfirmation()
+                    ->modalHeading('Hold Pelanggan?')
+                    ->modalDescription('Pelanggan ini tidak akan bisa melakukan transaksi makan sampai blokir dibuka.')
+                    ->visible(fn (MealEntry $record): bool => ! $record->paid && ! $record->customer?->is_blocked)
+                    ->action(function (MealEntry $record) {
+                        $customer = $record->customer;
+                        if (! $customer) return;
+
+                        $customer->update(['is_blocked' => true]);
+
+                        Notification::make()
+                            ->title('Pelanggan di-HOLD')
+                            ->body("{$customer->name} telah diblokir dari transaksi.")
+                            ->danger()
+                            ->send();
+                    }),
             ])
             ->bulkActions([
                 BulkAction::make('markPaid')
