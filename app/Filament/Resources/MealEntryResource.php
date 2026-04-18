@@ -8,6 +8,7 @@ use App\Models\MealEntry;
 use App\Models\Workplace;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
+use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Pages\PageRegistration;
 use Filament\Resources\Resource;
@@ -39,7 +40,7 @@ class MealEntryResource extends Resource
 
     public static function canDelete(Model $record): bool
     {
-        return false;
+        return (bool) $record->paid;
     }
 
     public static function table(Table $table): Table
@@ -68,6 +69,7 @@ class MealEntryResource extends Resource
                 TextColumn::make('paid')
                     ->label('Status')
                     ->badge()
+                    ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                     ->formatStateUsing(fn (bool $state): string => $state ? 'lunas' : 'belum lunas'),
                 TextColumn::make('paid_at')
                     ->label('Tanggal lunas')
@@ -116,9 +118,14 @@ class MealEntryResource extends Resource
                 Action::make('togglePaid')
                     ->label(fn (MealEntry $record): string => $record->paid ? 'Set belum lunas' : 'Set lunas')
                     ->icon(fn (MealEntry $record): string => $record->paid ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                    ->color(fn (MealEntry $record): string => $record->paid ? 'warning' : 'success')
+                    ->button()
                     ->action(function (MealEntry $record): void {
                         $record->togglePaid(! $record->paid);
                     }),
+                DeleteAction::make()
+                    ->button()
+                    ->visible(fn (MealEntry $record): bool => (bool) $record->paid),
             ])
             ->bulkActions([
                 BulkAction::make('markPaid')

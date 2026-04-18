@@ -47,7 +47,8 @@ class WorkplaceResource extends Resource
                     ->sortable(),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->button(),
             ])
             ->bulkActions([]);
     }

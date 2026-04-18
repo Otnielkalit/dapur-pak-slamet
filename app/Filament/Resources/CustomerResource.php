@@ -108,9 +108,12 @@ class CustomerResource extends Resource
                         ->toArray()),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                ViewAction::make()
+                    ->button(),
+                EditAction::make()
+                    ->button(),
+                DeleteAction::make()
+                    ->button(),
             ])
             ->bulkActions([
                 DeleteBulkAction::make(),
